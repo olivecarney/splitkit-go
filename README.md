@@ -2,7 +2,7 @@
 
 SplitKit is a lightweight expense-splitting web app for small groups. It is planned as a clean Go MVP that lets users create groups, add members, record shared expenses, calculate balances, and mark settlements as paid.
 
-The app should stay simple, fast, server-rendered, and easy to extend later with real authentication, analytics, and email.
+The app should stay simple, fast, and server-rendered.
 
 ## MVP Scope
 
@@ -21,7 +21,6 @@ Out of scope for the MVP:
 
 - Real authentication
 - Email invites
-- Analytics
 - Payment processing
 - Bank connections
 - Multi-currency support
@@ -38,12 +37,6 @@ Out of scope for the MVP:
 - htmx
 - Alpine.js for small UI interactions where useful
 
-Future integrations are expected to be added behind small interfaces:
-
-- Clerk for authentication
-- PostHog for analytics
-- Resend, Mailgun, or MailerLite for email
-
 ## Planned Structure
 
 ```txt
@@ -53,14 +46,11 @@ cmd/
 
 internal/
   app/
-  auth/
   db/
   groups/
   expenses/
   balances/
   settlements/
-  analytics/
-  mailer/
   views/
 
 migrations/
@@ -83,24 +73,54 @@ Money should be stored as integer cents, not floats. The MVP should use GBP only
 
 ## Development Status
 
-This repository is currently at planning/bootstrap stage. The implementation plan lives in [splitkit-mvp-plan.md](./splitkit-mvp-plan.md).
+This repository has an initial runnable scaffold for the MVP.
 
-Expected initial setup:
+The current app uses an in-memory store so you can run and tweak the Go code before wiring PostgreSQL/sqlc into the request path. Migrations and an initial sqlc config are included for the database stage.
+
+Run the app:
 
 ```sh
-go mod init github.com/olivercarney/splitkit-go
+make run
 ```
 
-Once the application is scaffolded, this README should be updated with the actual setup commands for:
+Then open:
 
-- Environment variables
-- Database creation and migrations
-- sqlc generation
-- templ generation
-- Tailwind build/watch
-- Running the web server
-- Running tests
+```txt
+http://localhost:8080
+```
+
+Useful commands:
+
+```sh
+make fmt
+make test
+```
+
+The server also accepts a custom port:
+
+```sh
+PORT=3000 make run
+```
+
+## Current Implementation Notes
+
+- `cmd/web/main.go` starts the web server.
+- `internal/app` owns routing, rendering, and page loading.
+- `internal/models` contains the domain structs.
+- `internal/store` provides the temporary in-memory data store.
+- `internal/groups`, `internal/expenses`, `internal/balances`, and `internal/settlements` contain the business logic.
+- `internal/views` contains server-rendered HTML templates.
+- `static/css/app.css` contains the first-pass UI styles.
+- `migrations` and `internal/db/queries` are ready for the PostgreSQL/sqlc stage.
+
+Next likely build steps:
+
+- Add PostgreSQL connection config.
+- Replace `internal/store.MemoryStore` with a sqlc-backed store.
+- Expand sqlc queries for members, expenses, splits, balances, and settlements.
+- Add focused tests for money parsing, equal split rounding, and settlement suggestions.
+- Move templates to templ components once the core flow is settled.
 
 ## Success Criteria
 
-The MVP is complete when a user can create a group, add members, add expenses, calculate balances, view settlement suggestions, and mark settlements as paid without needing Clerk, PostHog, or email services.
+The MVP is complete when a user can create a group, add members, add expenses, calculate balances, view settlement suggestions, and mark settlements as paid.

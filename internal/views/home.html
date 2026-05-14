@@ -1,0 +1,25 @@
+{{define "home"}}
+<!doctype html>
+<html lang="en">
+  <head>{{template "head" .}}</head>
+  <body>
+    {{template "nav" .}}
+    <main class="shell hero">
+      <section class="hero-copy">
+        <p class="eyebrow">Shared expenses without the spreadsheet fog</p>
+        <h1>SplitKit</h1>
+        <p class="lead">A small, server-rendered Go app for tracking group spending, equal splits, balances, and simple settlements.</p>
+        <div class="actions">
+          <a class="button" href="/groups/new">Create a group</a>
+          <a class="button secondary" href="/groups">View groups</a>
+        </div>
+      </section>
+      <section class="ledger-preview" aria-label="Balance preview">
+        <div class="preview-row positive"><span>Alice</span><strong>+£20.00</strong></div>
+        <div class="preview-row"><span>Bob owes Alice</span><strong>£10.00</strong></div>
+        <div class="preview-row"><span>Charlie owes Alice</span><strong>£10.00</strong></div>
+      </section>
+    </main>
+  </body>
+</html>
+{{end}}

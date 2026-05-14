@@ -1,0 +1,19 @@
+{{define "head"}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · SplitKit</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+{{end}}
+
+{{define "nav"}}
+<header class="topbar">
+  <nav class="shell nav">
+    <a class="brand" href="/">SplitKit</a>
+    <div class="nav-links">
+      <a href="/groups">Groups</a>
+      <a href="/groups/new">New group</a>
+    </div>
+  </nav>
+</header>
+{{end}}

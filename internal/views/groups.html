@@ -1,0 +1,40 @@
+{{define "groups"}}
+<!doctype html>
+<html lang="en">
+  <head>{{template "head" .}}</head>
+  <body>
+    {{template "nav" .}}
+    <main class="shell stack">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Groups</p>
+          <h1>Your shared tabs</h1>
+        </div>
+        <a class="button" href="/groups/new">Create group</a>
+      </div>
+
+      {{if .Groups}}
+      <div class="grid-list">
+        {{range .Groups}}
+        <article class="group-card">
+          <a class="group-card-link" href="/groups/{{.ID}}">
+            <span>{{.Name}}</span>
+            <small>Open dashboard</small>
+          </a>
+          <form method="post" action="/groups/{{.ID}}/delete" onsubmit="return confirm('Delete this group? This cannot be undone.');">
+            <button class="text-danger" type="submit">Delete group</button>
+          </form>
+        </article>
+        {{end}}
+      </div>
+      {{else}}
+      <section class="empty">
+        <h2>No groups yet</h2>
+        <p>Create a group for a trip, house share, dinner, or project tab.</p>
+        <a class="button" href="/groups/new">Create your first group</a>
+      </section>
+      {{end}}
+    </main>
+  </body>
+</html>
+{{end}}

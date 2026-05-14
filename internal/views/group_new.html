@@ -1,0 +1,25 @@
+{{define "group_new"}}
+<!doctype html>
+<html lang="en">
+  <head>{{template "head" .}}</head>
+  <body>
+    {{template "nav" .}}
+    <main class="shell narrow stack">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">New group</p>
+          <h1>Start a shared tab</h1>
+        </div>
+      </div>
+
+      <form class="panel form" method="post" action="/groups">
+        <label>
+          <span>Group name</span>
+          <input name="name" placeholder="Croatia trip" required autofocus>
+        </label>
+        <button class="button" type="submit">Create group</button>
+      </form>
+    </main>
+  </body>
+</html>
+{{end}}

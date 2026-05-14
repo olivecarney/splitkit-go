@@ -1,0 +1,149 @@
+{{define "group_show"}}
+<!doctype html>
+<html lang="en">
+  <head>{{template "head" .}}</head>
+  <body>
+    {{template "nav" .}}
+    <main class="shell stack">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Group dashboard</p>
+          <h1>{{.Group.Name}}</h1>
+        </div>
+        <div class="actions">
+          <a class="button secondary" href="/groups">All groups</a>
+          <form method="post" action="/groups/{{.Group.ID}}/delete" onsubmit="return confirm('Delete this group? This cannot be undone.');">
+            <button class="button danger" type="submit">Delete group</button>
+          </form>
+        </div>
+      </div>
+
+      <section class="dashboard-grid">
+        <div class="panel stack" id="members">
+          <h2>Members</h2>
+          <ul class="simple-list">
+            {{range .Members}}
+            <li>
+              <span>{{.DisplayName}}</span>
+              <form method="post" action="/groups/{{$.Group.ID}}/members/remove" onsubmit="return confirm('Remove this member? Related expenses and settlements will be removed.');">
+                <input type="hidden" name="member_id" value="{{.ID}}">
+                <button class="text-danger" type="submit">Remove</button>
+              </form>
+            </li>
+            {{end}}
+          </ul>
+          <form class="inline-form" method="post" action="/groups/{{.Group.ID}}/members">
+            <input name="display_name" placeholder="Add member" required {{if .FocusMember}}autofocus{{end}}>
+            <button class="button small" type="submit">Add</button>
+          </form>
+        </div>
+
+        <div class="panel stack">
+          <h2>Balances</h2>
+          {{if .Balances}}
+          <ul class="simple-list">
+            {{range .Balances}}
+            <li>
+              <span>{{.DisplayName}}</span>
+              <strong class="{{if lt .AmountCents 0}}negative{{else if gt .AmountCents 0}}positive{{end}}">{{signedMoney .AmountCents}}</strong>
+            </li>
+            {{end}}
+          </ul>
+          {{else}}
+          <p class="muted">Balances appear after adding members and expenses.</p>
+          {{end}}
+        </div>
+      </section>
+
+      <section class="panel stack">
+        <h2>Add expense</h2>
+        <form class="expense-form" method="post" action="/groups/{{.Group.ID}}/expenses">
+          <label>
+            <span>Description</span>
+            <input name="description" placeholder="Dinner" required>
+          </label>
+          <label>
+            <span>Amount</span>
+            <input name="amount" inputmode="decimal" placeholder="30.00" required>
+          </label>
+          <label>
+            <span>Paid by</span>
+            <select name="paid_by_id" required>
+              {{range .Members}}<option value="{{.ID}}">{{.DisplayName}}</option>{{end}}
+            </select>
+          </label>
+          <fieldset>
+            <legend>Split with</legend>
+            <div class="check-grid">
+              {{range .Members}}
+              <label class="check">
+                <input type="checkbox" name="split_with" value="{{.ID}}" checked>
+                <span>{{.DisplayName}}</span>
+              </label>
+              {{end}}
+            </div>
+          </fieldset>
+          <button class="button" type="submit">Add expense</button>
+        </form>
+      </section>
+
+      <section class="two-column">
+        <div class="panel stack" id="expenses">
+          <h2>Expenses</h2>
+          {{if .Expenses}}
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Description</th><th>Paid by</th><th class="amount">Amount</th></tr></thead>
+              <tbody>
+                {{range .Expenses}}
+                <tr>
+                  <td>{{.Description}}</td>
+                  <td>{{.PaidByName}}</td>
+                  <td class="amount">{{money .AmountCents}}</td>
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+          {{else}}
+          <p class="muted">No expenses recorded yet.</p>
+          {{end}}
+        </div>
+
+        <div class="panel stack" id="settlements">
+          <h2>Settlement suggestions</h2>
+          {{if .Suggestions}}
+          <ul class="simple-list">
+            {{range .Suggestions}}
+            <li class="settlement">
+              <span>{{.FromName}} owes {{.ToName}}</span>
+              <form method="post" action="/groups/{{$.Group.ID}}/settlements">
+                <input type="hidden" name="from_user_id" value="{{.FromUserID}}">
+                <input type="hidden" name="to_user_id" value="{{.ToUserID}}">
+                <input type="hidden" name="amount_cents" value="{{.AmountCents}}">
+                <strong>{{money .AmountCents}}</strong>
+                <button class="button small secondary" type="submit">Paid</button>
+              </form>
+            </li>
+            {{end}}
+          </ul>
+          {{else}}
+          <p class="muted">Nothing to settle yet.</p>
+          {{end}}
+        </div>
+      </section>
+
+      {{if .Settlements}}
+      <section class="panel stack">
+        <h2>Paid settlements</h2>
+        <ul class="simple-list">
+          {{range .Settlements}}
+          <li><span>{{.FromName}} paid {{.ToName}}</span><strong>{{money .AmountCents}}</strong></li>
+          {{end}}
+        </ul>
+      </section>
+      {{end}}
+    </main>
+  </body>
+</html>
+{{end}}
