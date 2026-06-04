@@ -1,60 +1,90 @@
 # SplitKit
 
-SplitKit is a lightweight expense-splitting web app for small groups. It is planned as a clean Go MVP that lets users create groups, add members, record shared expenses, calculate balances, and mark settlements as paid.
+SplitKit is a Go/PostgreSQL expense-splitting backend with a small server-rendered UI. It lets a development user create groups, add members, record shared expenses, calculate balances, get settlement suggestions, and mark settlements as paid.
 
-The app should stay simple, fast, and server-rendered.
+## Problem
 
-## MVP Scope
+Small groups often need to settle a shared trip, household bill, or dinner without tracking every payment manually. SplitKit records who paid, who participated in each equal split, and what has already been settled so the app can answer two questions:
 
-The first version focuses on:
+- What is each member's current net balance?
+- What is the smallest practical set of transfers that clears those balances?
 
-- Creating groups
-- Adding group members
-- Adding shared expenses
-- Splitting expenses equally
-- Calculating member balances
-- Suggesting who owes whom
-- Marking settlements as paid
-- Running with a development-only user
+The MVP deliberately avoids payment processing, real authentication, bank connections, receipt uploads, and multi-currency support.
 
-Out of scope for the MVP:
-
-- Real authentication
-- Email invites
-- Payment processing
-- Bank connections
-- Multi-currency support
-- Unequal or percentage splits
-- Receipt uploads
-
-## Tech Stack
-
-- Go
-- PostgreSQL
-- sqlc
-- templ
-- TailwindCSS
-- htmx
-- Alpine.js for small UI interactions where useful
-
-## Planned Structure
+## Architecture
 
 ```txt
 cmd/
   web/
-    main.go
+    main.go              # boot, PostgreSQL pool, migrations, HTTP server
 
 internal/
-  app/
+  app/                   # routing, form handling, template rendering
   db/
-  groups/
-  expenses/
-  balances/
-  settlements/
-  views/
+    migrate.go           # simple ordered SQL migration runner
+    queries/             # sqlc query source
+    sqlc/                # generated sqlc package
+  groups/                # group/member service validation
+  expenses/              # money parsing and equal-split logic
+  balances/              # balance calculation and settlement optimisation
+  settlements/           # paid-settlement service validation
+  store/                 # PostgreSQL adapter implementing app store interfaces
+  views/                 # server-rendered HTML templates
 
 migrations/
-static/
+static/                  # CSS
+```
+
+The app uses `pgx` for PostgreSQL access and `sqlc` for typed query methods. `internal/store.PostgresStore` is the adapter between generated database rows and domain structs in `internal/models`.
+
+## Schema
+
+The schema is in [migrations](migrations):
+
+- `users`: development/local users plus generated group-member users.
+- `groups`: expense groups, owned by a user.
+- `group_members`: membership display names scoped to a group.
+- `expenses`: one row per paid expense, with `amount_cents BIGINT`.
+- `expense_splits`: integer-cent split rows linked to an expense.
+- `settlements`: paid transfers between members, also stored as integer cents.
+
+Group deletion cascades through expenses, splits, members, and settlements. Member removal deletes expenses paid by that member, removes their split rows from remaining expenses, deletes expenses with no remaining splits, and removes settlements involving that member.
+
+## Local Development
+
+Start PostgreSQL:
+
+```sh
+make db-up
+```
+
+Run the app:
+
+```sh
+make run
+```
+
+Then open:
+
+```txt
+http://localhost:8080
+```
+
+The default connection string is:
+
+```txt
+postgres://splitkit:splitkit@localhost:5432/splitkit?sslmode=disable
+```
+
+Override it with `DATABASE_URL`. The server applies migrations from `migrations/` on startup.
+
+Useful commands:
+
+```sh
+make test
+make fmt
+make sqlc
+make db-down
 ```
 
 ## Core Flow
@@ -69,58 +99,41 @@ App suggests settlements
 User marks a settlement as paid
 ```
 
-Money should be stored as integer cents, not floats. The MVP should use GBP only.
+## Settlement Optimisation
 
-## Development Status
+Balances are calculated by adding paid expense amounts to payers, subtracting split shares from participants, then applying paid settlements. Settlement suggestions split members into debtors and creditors, then greedily match the next debtor to the next creditor until all non-zero balances are cleared. This minimises the number of suggested transfers for the current balance list without changing the underlying expense history.
 
-This repository has an initial runnable scaffold for the MVP.
+## Financial Correctness Notes
 
-The current app uses an in-memory store so you can run and tweak the Go code before wiring PostgreSQL/sqlc into the request path. Migrations and an initial sqlc config are included for the database stage.
+- Money is parsed from decimal strings into integer cents. Floats are never used.
+- Inputs must be positive and can have at most two decimal places.
+- Stored money columns are `BIGINT` to match Go `int64`.
+- Equal split rounding distributes any one-cent remainder to the earliest selected participants, so split rows always sum exactly to the original expense.
+- GBP is the only supported currency in the MVP.
+- Paid settlements are stored as immutable transfer records with `settled_at`; they are applied to future balance calculations.
 
-Run the app:
+## Trade-Offs
+
+- A development-only user keeps the MVP focused on expense correctness; real auth can be added later without changing expense math.
+- Equal splits are the only supported split type. Unequal splits would require explicit per-participant amounts and additional validation.
+- Startup migrations are intentionally simple and work for local development. Production deployments may want a dedicated migration tool and rollback policy.
+- Settlement suggestions are deterministic and simple, but they do not consider user preferences, payment rails, or partial payments.
+- The UI is server-rendered HTML for speed and simplicity rather than a separate frontend application.
+
+## Screenshots/GIF
+
+Add screenshots or a short GIF under `docs/screenshots/` once the UI flow is captured. Suggested captures:
+
+- Group dashboard with balances and settlement suggestions.
+- Expense creation form showing equal split participants.
+- Paid settlement history after marking a suggestion as paid.
+
+## CI
+
+GitHub Actions runs:
 
 ```sh
-make run
+go test ./...
 ```
 
-Then open:
-
-```txt
-http://localhost:8080
-```
-
-Useful commands:
-
-```sh
-make fmt
-make test
-```
-
-The server also accepts a custom port:
-
-```sh
-PORT=3000 make run
-```
-
-## Current Implementation Notes
-
-- `cmd/web/main.go` starts the web server.
-- `internal/app` owns routing, rendering, and page loading.
-- `internal/models` contains the domain structs.
-- `internal/store` provides the temporary in-memory data store.
-- `internal/groups`, `internal/expenses`, `internal/balances`, and `internal/settlements` contain the business logic.
-- `internal/views` contains server-rendered HTML templates.
-- `static/css/app.css` contains the first-pass UI styles.
-- `migrations` and `internal/db/queries` are ready for the PostgreSQL/sqlc stage.
-
-Next likely build steps:
-
-- Add PostgreSQL connection config.
-- Replace `internal/store.MemoryStore` with a sqlc-backed store.
-- Expand sqlc queries for members, expenses, splits, balances, and settlements.
-- Add focused tests for money parsing, equal split rounding, and settlement suggestions.
-- Move templates to templ components once the core flow is settled.
-
-## Success Criteria
-
-The MVP is complete when a user can create a group, add members, add expenses, calculate balances, view settlement suggestions, and mark settlements as paid.
+See [.github/workflows/test.yml](.github/workflows/test.yml).

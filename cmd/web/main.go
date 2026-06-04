@@ -1,22 +1,40 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/olivercarney/splitkit-go/internal/app"
+	"github.com/olivercarney/splitkit-go/internal/db"
 	"github.com/olivercarney/splitkit-go/internal/models"
 	"github.com/olivercarney/splitkit-go/internal/store"
 )
 
 func main() {
+	ctx := context.Background()
 	port := getenv("PORT", "8080")
+	databaseURL := getenv("DATABASE_URL", "postgres://splitkit:splitkit@localhost:5432/splitkit?sslmode=disable")
+	devUserID := getenv("DEV_USER_ID", "00000000-0000-0000-0000-000000000001")
+
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pool.Close()
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Migrate(ctx, pool, "migrations"); err != nil {
+		log.Fatal(err)
+	}
 
 	server := app.NewServer(app.Config{
 		Addr:          ":" + port,
-		Store:         store.NewMemoryStore(),
-		DevUser:       models.User{ID: "local-user"},
+		Store:         store.NewPostgresStore(pool),
+		DevUser:       models.User{ID: devUserID, Email: "dev@splitkit.local"},
 		StaticDir:     "static",
 		TemplatesGlob: "internal/views/*.html",
 	})

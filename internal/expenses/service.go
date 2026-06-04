@@ -3,6 +3,7 @@ package expenses
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -80,4 +81,38 @@ func ParseMoney(value string) (int64, error) {
 		return 0, errors.New("amount must be greater than zero")
 	}
 	return cents, nil
+}
+
+func EqualSplits(amountCents int64, participants []string) ([]models.ExpenseSplit, error) {
+	if amountCents <= 0 {
+		return nil, errors.New("amount must be greater than zero")
+	}
+	if len(participants) == 0 {
+		return nil, errors.New("choose at least one person to split with")
+	}
+
+	seen := make(map[string]struct{}, len(participants))
+	splitCount := int64(len(participants))
+	baseShare := amountCents / splitCount
+	remainder := amountCents % splitCount
+	splits := make([]models.ExpenseSplit, 0, len(participants))
+	for index, userID := range participants {
+		if userID == "" {
+			return nil, errors.New("split participant is required")
+		}
+		if _, ok := seen[userID]; ok {
+			return nil, fmt.Errorf("duplicate split participant: %s", userID)
+		}
+		seen[userID] = struct{}{}
+
+		share := baseShare
+		if int64(index) < remainder {
+			share++
+		}
+		splits = append(splits, models.ExpenseSplit{
+			UserID:      userID,
+			AmountCents: share,
+		})
+	}
+	return splits, nil
 }
