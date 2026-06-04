@@ -2,6 +2,8 @@
 
 SplitKit is a Go/PostgreSQL expense-splitting backend with a small server-rendered UI. It lets a development user create groups, add members, record shared expenses, calculate balances, get settlement suggestions, and mark settlements as paid.
 
+I built this to practise backend financial logic: integer-money handling, database-backed domain modelling, settlement optimisation, and testable service design.
+
 ## Problem
 
 Small groups often need to settle a shared trip, household bill, or dinner without tracking every payment manually. SplitKit records who paid, who participated in each equal split, and what has already been settled so the app can answer two questions:
@@ -120,13 +122,19 @@ Balances are calculated by adding paid expense amounts to payers, subtracting sp
 - Settlement suggestions are deterministic and simple, but they do not consider user preferences, payment rails, or partial payments.
 - The UI is server-rendered HTML for speed and simplicity rather than a separate frontend application.
 
-## Screenshots/GIF
+## Screenshots
 
-Add screenshots or a short GIF under `docs/screenshots/` once the UI flow is captured. Suggested captures:
+### Group dashboard
 
-- Group dashboard with balances and settlement suggestions.
-- Expense creation form showing equal split participants.
-- Paid settlement history after marking a suggestion as paid.
+![Group dashboard](docs/screenshots/group-dashboard.png)
+
+### Expenses
+
+![Expenses](docs/screenshots/expenses.png)
+
+### Settlement suggestions
+
+![Settlement suggestions](docs/screenshots/settlement-suggestions.png)
 
 ## CI
 

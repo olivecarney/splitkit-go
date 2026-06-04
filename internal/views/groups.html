@@ -18,11 +18,13 @@
         {{range .Groups}}
         <article class="group-card">
           <a class="group-card-link" href="/groups/{{.ID}}">
-            <span>{{.Name}}</span>
-            <small>Open dashboard</small>
+            <div>
+              <span>{{.Name}}</span>
+              <small>Open dashboard</small>
+            </div>
           </a>
           <form method="post" action="/groups/{{.ID}}/delete" onsubmit="return confirm('Delete this group? This cannot be undone.');">
-            <button class="text-danger" type="submit">Delete group</button>
+            <button class="text-danger" type="submit">Delete</button>
           </form>
         </article>
         {{end}}
