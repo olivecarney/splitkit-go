@@ -20,6 +20,7 @@ bin/
 dist/
 build/
 tmp/
+/web
 *.exe
 *.exe~
 *.dll
