@@ -1,4 +1,4 @@
-module github.com/olivercarney/splitkit-go
+module github.com/olivecarney/splitkit-go
 
 go 1.25.0
 
