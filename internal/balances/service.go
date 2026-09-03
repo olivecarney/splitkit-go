@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/olivercarney/splitkit-go/internal/models"
+	"github.com/olivecarney/splitkit-go/internal/models"
 )
 
 type Store interface {
