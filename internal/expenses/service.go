@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/olivercarney/splitkit-go/internal/models"
+	"github.com/olivecarney/splitkit-go/internal/models"
 )
 
 type Store interface {

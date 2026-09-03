@@ -1,6 +1,6 @@
 package app
 
-import "github.com/olivercarney/splitkit-go/internal/models"
+import "github.com/olivecarney/splitkit-go/internal/models"
 
 type pageData struct {
 	Title       string

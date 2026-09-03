@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/olivercarney/splitkit-go/internal/db"
-	"github.com/olivercarney/splitkit-go/internal/models"
+	"github.com/olivecarney/splitkit-go/internal/db"
+	"github.com/olivecarney/splitkit-go/internal/models"
 )
 
 func TestPostgresStoreExpenseAndSettlementFlow(t *testing.T) {

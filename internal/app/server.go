@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/olivercarney/splitkit-go/internal/balances"
-	"github.com/olivercarney/splitkit-go/internal/expenses"
-	"github.com/olivercarney/splitkit-go/internal/groups"
-	"github.com/olivercarney/splitkit-go/internal/models"
-	"github.com/olivercarney/splitkit-go/internal/settlements"
+	"github.com/olivecarney/splitkit-go/internal/balances"
+	"github.com/olivecarney/splitkit-go/internal/expenses"
+	"github.com/olivecarney/splitkit-go/internal/groups"
+	"github.com/olivecarney/splitkit-go/internal/models"
+	"github.com/olivecarney/splitkit-go/internal/settlements"
 )
 
 type DataStore interface {
