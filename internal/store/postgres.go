@@ -11,9 +11,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/olivercarney/splitkit-go/internal/db/sqlc"
-	"github.com/olivercarney/splitkit-go/internal/expenses"
-	"github.com/olivercarney/splitkit-go/internal/models"
+	"github.com/olivecarney/splitkit-go/internal/db/sqlc"
+	"github.com/olivecarney/splitkit-go/internal/expenses"
+	"github.com/olivecarney/splitkit-go/internal/models"
 )
 
 type PostgresStore struct {
